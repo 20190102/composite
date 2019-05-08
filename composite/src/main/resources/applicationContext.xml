@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:p="http://www.springframework.org/schema/p"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
+
+    <!-- 扫描注解-->
+    <context:component-scan base-package="com.clx.composite.model,com.clx.composite.service"/>
+
+    <!--引入mysql,redis连接配置文件-->
+    <context:property-placeholder location="classpath:*.properties"/>
+
+    <!--配置c3p0连接池-->
+    <bean id="comboPooledDataSource" class="com.mchange.v2.c3p0.ComboPooledDataSource" destroy-method="close">
+        <property name="driverClass" value="${jdbc.dirverClass}"/>
+        <property name="jdbcUrl" value="${jdbc.jdbcUrl}"/>
+        <property name="user" value="${jdbc.user}"/>
+        <property name="password" value="${jdbc.password}"/>
+    </bean>
+
+    <!--配置SqlSessionFactory-->
+    <bean name="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <!--配置数据源-->
+        <property name="dataSource" ref="comboPooledDataSource"/>
+        <!--配置mapper文件地址-->
+        <property name="mapperLocations" value="classpath:mappers/*.xml"/>
+        <!--配置mapper中使用的实体类别名,默认为类名第一个字母小写,也可以使用typeAliasesPackage扫描包-->
+        <property name="typeAliases">
+            <list>
+                <value>com.clx.composite.model.RequestDTO</value>
+                <value>com.clx.composite.model.UserDO</value>
+            </list>
+        </property>
+        <!--配置插件-->
+        <property name="plugins">
+            <list>
+                <!--分页插件pagehelper-->
+                <bean class="com.github.pagehelper.PageInterceptor">
+                    <property name="properties">
+                        <!--分页参数合理化-->
+                        <value>
+                            reasonable=true
+                        </value>
+                    </property>
+                </bean>
+            </list>
+        </property>
+    </bean>
+
+    <!--配置mapper接口扫描-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
+        <property name="basePackage" value="com.clx.composite.mapper"/>
+    </bean>
+
+    <!--配置redis连接池-->
+    <bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig"/>
+
+    <!--配置redis连接-->
+    <bean id="jedisConnectionFactory"
+          class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
+          p:host-name="${redis.host-name}"
+          p:port="${redis.port}"
+          p:usePool="${redis.usepool}"
+          p:poolConfig-ref="jedisPoolConfig"
+    />
+
+    <!--加载redis序列化器-->
+    <bean id="stringRedisSerializer" class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
+
+     <!--redisTemplate与stringRedisTemplate中封装了redis的操作方法，注入连接和序列化器-->
+    <bean id="redisTemplate"
+          class="org.springframework.data.redis.core.RedisTemplate"
+          p:connectionFactory-ref="jedisConnectionFactory"
+          p:defaultSerializer-ref="stringRedisSerializer"/>
+
+    <bean id="stringRedisTemplate"
+          class="org.springframework.data.redis.core.StringRedisTemplate"
+          p:connectionFactory-ref="jedisConnectionFactory"
+          p:keySerializer-ref="stringRedisSerializer"
+          p:valueSerializer-ref="stringRedisSerializer">
+    </bean>
+
+    <!--给静态属性注入对象-->
+    <bean id="redisUtil" class="com.clx.composite.utils.RedisUtil">
+        <property name="stringRedisTemplate" ref="stringRedisTemplate"/>
+        <property name="redisTemplate" ref="redisTemplate"/>
+    </bean>
+
+</beans>

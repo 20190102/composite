@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.6/css/bootstrap.min.css">
+    <script src="../js/vue.min.js"></script>
+    <script src="../js/axios.min.js"></script>
+</head>
+<style>
+    .input-group {
+        width: 375px;
+        margin: 20px auto;
+    }
+
+    .container {
+        position: relative;
+        z-index: 0;
+    }
+
+    #update,#insert {
+        height: 100%;
+        width: 100%;
+        top: 0;
+        left: 0;
+        position: absolute;
+        z-index: 1;
+        background: rgba(0, 0, 0, 0.5);
+    }
+
+    .updateForm{
+        background-color: white;
+        margin: 50px auto auto;
+        width: 400px;
+        height: 550px;
+    }
+    .insertForm{
+        background-color: white;
+        margin: 50px auto auto;
+        width: 400px;
+        height: 500px;
+    }
+    .msg{
+        color: red;
+    }
+    .text-center{
+        height: 25px;
+    }
+    span{
+        font-size: 18px;
+    }
+    [v-cloak] {
+        display: none;
+    }
+    .pagination{
+        margin:0px;
+    }
+</style>
+
+<body>
+
+    <div id="app">
+        <div class="container">
+            <div class="input-group input-group-lg">
+                <input type="text" class="form-control" v-model="queryInfo">
+                <span class="input-group-btn">
+                    <button class="btn btn-default" @click="search">
+                        <span class="glyphicon glyphicon-search"></span>
+                    </button>
+                </span>
+            </div>
+            <table class="table table-hover table-striped">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" v-model="checkAll"></th>
+                        <td>ID</td>
+                        <th>邮箱</th>
+                        <th>用户名</th>
+                        <th>生日</th>
+                        <th>性别</th>
+                        <th>注册时间</th>
+                        <th>权限</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(item,index) in info.list" :key="item.id"  v-cloak>
+                        <td><input type="checkbox"  :value="item.id" v-model="idList"></td>
+                        <td>{{item.id}}</td>
+                        <td>{{item.email}}</td>
+                        <td>{{item.username}}</td>
+                        <td>{{item.birthday}}</td>
+                        <td>{{item.sex}}</td>
+                        <td>{{item.registerDay}}</td>
+                        <td v-text="item.permission===1?'普通用户':'管理员'"></td>
+                        <td>
+                            <button class="btn btn-default" @click="update_form(item.id)">修改</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <nav>
+                <ul class="pagination">
+                    <li><a href="" @click.prevent="deleteUsers">删除</a></li>
+                    <li><a href="" @click.prevent="insert_form">新增</a></li>
+                </ul>
+                <ul class="pagination pull-right">
+                    <li><a href="" @click.prevent="lastPage">上一页</a></li>
+                    <li><a href="" @click.prevent="nextPage">下一页</a></li>
+                </ul>
+            </nav>
+        </div>
+        <!-- 更新用户表单 -->
+        <div id="update" v-show="updateForm_cover"  @click.self.prevent="close" v-cloak>
+            <div class="updateForm">
+                <div class="text-center">
+                    <label class="msg">{{msg}}</label>
+                    <button class="close" @click="close">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
+                <div class="input-group">
+                    <span>ID：</span>
+                    <label>{{id}}</label>
+                </div>
+                <div class="input-group">
+                    <span>邮箱：</span>
+                    <input type="text" v-model="email" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>用户名：</span>
+                    <input type="text" v-model="username" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>生日：</span>
+                    <input type="date" v-model="birthday" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>性别：</span>
+                    <label for="man" class="radio-inline">
+                        <input type="radio" name="sex" value="男" v-model="sex" id="man" />男
+                    </label>
+                    <label for="woman" class="radio-inline">
+                        <input type="radio" name="sex" value="女" v-model="sex" id="woman" />女
+                    </label>
+                    <label for="secret" class="radio-inline">
+                        <input type="radio" name="sex" value="保密" v-model="sex" id="secret" />保密
+                    </label>
+                </div>
+                <div class="input-group">
+                    <span>权限：</span>
+                    <label for="user" class="radio-inline">
+                        <input type="radio" name="permission" value="1" v-model="permission" id="user" />普通用户
+                    </label>
+                    <label for="admin" class="radio-inline">
+                        <input type="radio" name="permission" value="0" v-model="permission" id="admin" />管理员
+                    </label>
+                </div>
+                <div class="input-group">
+                    <span>注册时间：</span><br />
+                    <span>{{registerDay}}</span>
+                </div>
+                <button class="btn btn-info center-block " @click="update">确认</button>
+            </div>
+        </div>
+
+        <!-- 新增用户表单 -->
+        <div id="insert" v-show="insertForm_cover" @click.self.prevent="close" v-cloak>
+            <div class="insertForm">
+                <div class="text-center">
+                    <label class="msg">{{msg}}</label>
+                    <button class="close" @click="close">
+                        <span class="glyphicon glyphicon-remove"></span>
+                    </button>
+                </div>
+                <div class="input-group">
+                    <span>邮箱：</span>
+                    <input type="text" v-model="email" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>用户名：</span>
+                    <input type="text" v-model="username" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>密码：</span>
+                    <input type="text" v-model="password" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>生日：</span>
+                    <input type="date" v-model="birthday" class="form-control">
+                </div>
+                <div class="input-group">
+                    <span>性别：</span>
+                    <label for="man2" class="radio-inline">
+                        <input type="radio" name="sex2" value="男" v-model="sex" id="man2" />男
+                    </label>
+                    <label for="woman2" class="radio-inline">
+                        <input type="radio" name="sex2" value="女" v-model="sex" id="woman2" />女
+                    </label>
+                    <label for="secret2" class="radio-inline">
+                        <input type="radio" name="sex2" value="保密" v-model="sex" id="secret2" />保密
+                    </label>
+                </div>
+                <div class="input-group">
+                    <span>权限：</span>
+                    <label for="user2" class="radio-inline">
+                        <input type="radio" name="permission2" value="1" v-model="permission" id="user2" />普通用户
+                    </label>
+                    <label for="admin2" class="radio-inline">
+                        <input type="radio" name="permission2" value="0" v-model="permission" id="admin2" />管理员
+                    </label>
+                </div>
+                <button class="btn btn-info center-block " @click="insert">确认</button>
+            </div>
+        </div>
+    </div>
+    <script>
+    axios.defaults.baseURL = 'http://localhost:8080/composite';
+    axios.defaults.headers.common['Authorization'] = localStorage.token;
+
+    axios.interceptors.response.use(
+        response => {
+            if (response.data.token) {
+                localStorage.token = response.data.token
+            }
+            if (response.data.code === 401) {
+                window.location.href = '../../index.html';
+            }
+            return response
+        }
+    )
+    var vm = new Vue({
+        el: '#app',
+        data: {
+            id:'',
+            idList:[],
+            checkAll: '',
+            queryInfo: '',
+            info: '',   //返回的页面和用户数据
+            updateForm_cover: false,
+            insertForm_cover: false,
+            email: '',
+            username: '',
+            password: '',
+            birthday: '',
+            registerDay: '',
+            permission: '',
+            sex: '',
+            registerDay: '',
+            msg: ''
+
+        },
+        created() {
+            this.search()
+        },
+        methods: {
+
+            //获取用户数据
+            search(pageNum) {
+                axios.get('users/' + this.queryInfo,{
+                    params:{
+                        page:pageNum
+                    }
+                }).then(result => {
+                    this.info = result.data.info
+                })
+            },
+
+            //用户的新增表单
+            insert_form() {
+                this.email = ''
+                this.username = ''
+                this.birthday = ''
+                this.sex = '男'
+                this.permission = '1'
+                this.password=''
+                this.insertForm_cover = true
+            },
+
+            //提交新增
+            insert() {
+                axios.post('users', {
+                    email: this.email,
+                    username: this.username,
+                    birthday: this.birthday,
+                    password: this.password,
+                    sex: this.sex,
+                    permission: this.permission
+                }).then(result => {
+                    if (result.data) {
+                        this.msg = '添加用户成功'
+                        this.search(this.info.pagn)
+                    } else {
+                        this.msg = '添加用户失败'
+                    }
+                })
+            },
+
+            //提交删除列表
+            deleteUsers() {
+                if (confirm("是否确认删除")){
+                    axios.delete('users',{
+                        data:{
+                            idList:this.idList
+                        }
+                    }).then(result=>{
+                        if(result.data){
+                            alert("删除成功")
+                            this.search(this.info.pageNum)
+                        }
+                    })
+                }
+            },
+
+            //用户的更新表单
+            update_form(id) {
+                this.info.list.forEach(item => {
+                    if (item.id === id) {
+                        this.id = item.id
+                        this.email = item.email
+                        this.username = item.username
+                        this.birthday = item.birthday
+                        this.sex = item.sex
+                        this.permission = item.permission
+                        this.registerDay = item.registerDay
+                    }
+                })
+                this.updateForm_cover = true
+            },
+
+            //提交更新
+            update() {
+                if (confirm("是否确认修改")) {
+                    axios.put('users', {
+                        id: this.id,
+                        email: this.email,
+                        username: this.username,
+                        birthday: this.birthday,
+                        sex: this.sex,
+                        permission: this.permission
+                    }).then(result => {
+                        if (result.data) {
+                            this.msg = '修改成功'
+                            this.search(this.info.pageNum);
+                        }else{
+                            this.msg = '修改失败'
+                        }
+
+                    })
+                }
+            },
+
+            //关闭遮罩层
+            close() {
+                this.updateForm_cover = false
+                this.insertForm_cover = false
+                this.msg = ''
+            },
+
+            //上一页
+            lastPage() {
+                if (this.info.pageNum > 1) {
+                    this.search(this.info.pageNum - 1)
+                }
+            },
+
+            //下一页
+            nextPage() {
+                if (this.info.pageNum < this.info.pages) {
+                    this.search(this.info.pageNum + 1)
+                }
+
+
+            }
+        },
+        watch: {
+            //全选&全不选
+            'checkAll': function() {
+                if (this.checkAll) {
+                    this.info.list.forEach(item => {
+                        this.idList.push(item.id)
+                    })
+                } else {
+                    this.idList = []
+                }
+            }
+
+
+        }
+    })
+    </script>
+    <script src="../js/jquery.min.js"></script>
+    <script src="../js/bootstrap.min.js"></script>
+</body>
+
+</html>
