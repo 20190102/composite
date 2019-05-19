@@ -1,12 +1,10 @@
 # composite
-## 一个综合的练习项目  
-前端: bootstrap,vue,vuex,axios  
-后端: SSM mysql redis  
-前后端分离项目，所有数据交互都使用axios实现  
-前后端是分开开发的，所以在后端添加了跨域注解
+## 一个查看用户数据的综合练习项目  
+前端: bootstrap,vue,vue-router,vuex,axios  
+后端: SSM,mysql,redis  
 
-* 基础的RESTful风格的crud,分页
-* 向邮箱发送验证码，注册验证，配合redis实现验证码有效时长
-* 使用jwt实现单点登录和验证是否已登录，密钥存在redis中，可以定时更换
-* 登录页引用的js文件经过webpack打包
-  
+## 主要功能:
+1. 登录注册，注册时向邮箱发送验证码，配合redis实现验证码有效时长。
+2. 使用jwt生成的token实现登录验证，配合cookie实现单点登录，jwt密钥保存在redis，可定时更换。
+3. REST风格的CRUD接口，pagehelper插件实现分页查看，搜索（全字段模糊匹配）。
+4. 上传xlsx格式的excel文件，保存在redis，前端可以分页查看，暂时没有其他功能。
