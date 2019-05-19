@@ -1,21 +1,18 @@
 package com.clx.composite.mapper;
 
-import com.clx.composite.model.RequestDTO;
-import com.clx.composite.model.UserDO;
+import com.clx.composite.model.DO.UserDO;
+import com.clx.composite.model.DTO.UserDTO;
 
 import java.util.List;
 
 public interface UserMapper {
 
-    public boolean login(RequestDTO requestDTO);
+    public boolean login(UserDTO userDTO);
 
-    public List<UserDO> listUsers(String queryInfo);
+    public List<UserDO> listUsers(String query);
 
-    public int insertUser(RequestDTO requestDTO);
+    public int signUp(UserDTO userDTO);
 
-    public int deleteUsers(List<Integer> idList);
 
-    public int updateUser(RequestDTO requestDTO);
-
-    public boolean hasRepeatEmail(RequestDTO requestDTO);
+    public int hasRepeatEmail(UserDTO userDTO);
 }

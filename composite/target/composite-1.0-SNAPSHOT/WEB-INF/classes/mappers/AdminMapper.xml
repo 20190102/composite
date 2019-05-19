@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.clx.composite.mapper.AdminMapper">
+
+    <!--获取用户数据-->
+    <select id="listUsers" parameterType="String" resultType="userDO">
+        SELECT
+            id,
+            email,
+            username,
+            birthday,
+            user_sex.msg AS sex,
+            signUpDay,
+            user_permission.msg AS permission
+        FROM user
+            LEFT JOIN user_sex ON user.sex=user_sex.sex_id
+            LEFT JOIN user_permission ON user.permission=user_permission.permission_id
+
+        <if test="_parameter!=null">
+            <bind name="query" value="'%'+_parameter+'%'"/>
+            WHERE
+                id LIKE #{query}
+                OR email LIKE #{query}
+                OR username LIKE #{query}
+                OR birthday LIKE #{query}
+                OR user_sex.msg LIKE #{query}
+                OR signUpDay LIKE #{query}
+                OR user_permission.msg LIKE #{query}
+        </if>
+
+    </select>
+
+    <!--修改用户数据-->
+    <update id="updateUser" parameterType="adminDTO">
+        UPDATE  user SET
+            email=#{email},
+            username=#{username},
+            birthday=#{birthday},
+            sex=#{sex},
+            permission=#{permission}
+        WHERE
+            id=#{id}
+    </update>
+    <!--添加用户-->
+    <insert id="insertUser" parameterType="adminDTO">
+        INSERT INTO user VALUES(DEFAULT,#{email},#{password},#{username},#{birthday},#{sex},#{signUpDay},#{permission} )
+    </insert>
+
+
+    <!--删除用户-->
+    <delete id="deleteUsers" parameterType="List">
+        DELETE FROM user where id in
+        <foreach collection="list" item="idList" open="(" separator="," close=")">
+            #{idList}
+        </foreach>
+    </delete>
+
+    <!--判断是否有相同的email存在-->
+    <select id="hasRepeatEmail" resultType="int">
+        select count(*) from user WHERE email=#{email} AND id!=#{id}
+    </select>
+</mapper>

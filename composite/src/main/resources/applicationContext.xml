@@ -6,8 +6,10 @@
        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd">
 
     <!-- 扫描注解-->
-    <context:component-scan base-package="com.clx.composite.model,com.clx.composite.service"/>
-
+    <context:component-scan base-package="
+    com.clx.composite.model,
+    com.clx.composite.service,
+    com.clx.composite.utils"/>
     <!--引入mysql,redis连接配置文件-->
     <context:property-placeholder location="classpath:*.properties"/>
 
@@ -25,13 +27,15 @@
         <property name="dataSource" ref="comboPooledDataSource"/>
         <!--配置mapper文件地址-->
         <property name="mapperLocations" value="classpath:mappers/*.xml"/>
-        <!--配置mapper中使用的实体类别名,默认为类名第一个字母小写,也可以使用typeAliasesPackage扫描包-->
-        <property name="typeAliases">
-            <list>
-                <value>com.clx.composite.model.RequestDTO</value>
-                <value>com.clx.composite.model.UserDO</value>
-            </list>
-        </property>
+        <!--配置mapper中使用的实体类别名,默认为类名第一个字母小写,也可以用typeAliases配置单个类-->
+<!--        <property name="typeAliases" >-->
+<!--            <list>-->
+<!--                <value>com.clx.composite.model.DO.UserDO</value>-->
+<!--                <value>com.clx.composite.model.DTO.AdminDTO</value>-->
+<!--                <value>com.clx.composite.model.DTO.UserDTO</value>-->
+<!--            </list>-->
+<!--        </property>-->
+        <property name="typeAliasesPackage" value="com.clx.composite.model"></property>
         <!--配置插件-->
         <property name="plugins">
             <list>
@@ -48,7 +52,7 @@
         </property>
     </bean>
 
-    <!--配置mapper接口扫描-->
+    <!--扫描mapper接口-->
     <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer">
         <property name="basePackage" value="com.clx.composite.mapper"/>
     </bean>
@@ -59,32 +63,33 @@
     <!--配置redis连接-->
     <bean id="jedisConnectionFactory"
           class="org.springframework.data.redis.connection.jedis.JedisConnectionFactory"
-          p:host-name="${redis.host-name}"
-          p:port="${redis.port}"
-          p:usePool="${redis.usepool}"
+          p:host-name="192.168.2.222"
+          p:port="6379"
+          p:usePool="true"
           p:poolConfig-ref="jedisPoolConfig"
     />
 
     <!--加载redis序列化器-->
+    <bean id="genericJackson2JsonRedisSerializer" class="org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer"/>
     <bean id="stringRedisSerializer" class="org.springframework.data.redis.serializer.StringRedisSerializer"/>
-
-     <!--redisTemplate与stringRedisTemplate中封装了redis的操作方法，注入连接和序列化器-->
+    <!--redisTemplate与stringRedisTemplate中封装了redis的操作方法，注入连接和序列化器-->
     <bean id="redisTemplate"
           class="org.springframework.data.redis.core.RedisTemplate"
           p:connectionFactory-ref="jedisConnectionFactory"
-          p:defaultSerializer-ref="stringRedisSerializer"/>
+          p:keySerializer-ref="stringRedisSerializer"
+          p:valueSerializer-ref="genericJackson2JsonRedisSerializer"
+    />
+
 
     <bean id="stringRedisTemplate"
           class="org.springframework.data.redis.core.StringRedisTemplate"
           p:connectionFactory-ref="jedisConnectionFactory"
-          p:keySerializer-ref="stringRedisSerializer"
-          p:valueSerializer-ref="stringRedisSerializer">
-    </bean>
 
-    <!--给静态属性注入对象-->
-    <bean id="redisUtil" class="com.clx.composite.utils.RedisUtil">
-        <property name="stringRedisTemplate" ref="stringRedisTemplate"/>
-        <property name="redisTemplate" ref="redisTemplate"/>
-    </bean>
+    />
+
+
+<!--    <bean id="stringHttpMessageConverter" class="org.springframework.http.converter.StringHttpMessageConverter">-->
+<!--        <property name="defaultCharset" value="UTF-8"/>-->
+<!--    </bean>-->
 
 </beans>

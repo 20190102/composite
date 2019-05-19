@@ -1,82 +1,87 @@
 package com.clx.composite.web;
 
 
-import com.clx.composite.model.LoginVO;
-import com.clx.composite.model.RequestDTO;
+import com.clx.composite.exception.DataInvalidException;
+import com.clx.composite.exception.UserException;
+import com.clx.composite.model.DTO.UserDTO;
+import com.clx.composite.model.VO.LoginVO;
 import com.clx.composite.service.UserService;
-
-import com.clx.composite.utils.CaptchaUtil;
 import com.clx.composite.utils.CheckUtil;
-
-
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
-@ResponseBody
-//开启跨域访问，方便测试
-@CrossOrigin
+import javax.mail.MessagingException;
+import javax.mail.internet.AddressException;
+
+@RestController
 public class UserController {
     @Autowired
     private UserService userService;
     @Autowired
     private LoginVO loginVO;
 
+
     /**
-     * 该方法是进入登录页面时，验证token，实现自动登录
+     * 使用token登录
+     *
      * @return
      */
     @RequestMapping("/loginInit")
     public LoginVO loginInit() {
+
+        loginVO.setCode(HttpStatus.OK.value());
+        loginVO.setMsg("token验证成功");
+
         return loginVO;
     }
 
     /**
-     *登录
-     * @param requestDTO username email remember
+     * 登录
+     *
+     * @param userDTO
      * @return
      */
-    @RequestMapping(value = "/login", method = RequestMethod.POST)
-    public LoginVO login(@RequestBody RequestDTO requestDTO) {
-        loginVO.setToken("");
-        loginVO.setCode(HttpStatus.UNAUTHORIZED.value());
-        //校验数据
-        if(CheckUtil.checkEmailAndPwd(requestDTO.getEmail(), requestDTO.getPassword())){
+    @PostMapping(value = "/login")
+    public LoginVO login(@RequestBody UserDTO userDTO) throws DataInvalidException, UserException {
 
-            String token =userService.login(requestDTO);
-            if(!"".equals(token)){
-                loginVO.setToken(token);
-                loginVO.setCode(HttpStatus.OK.value());
-            }
-        }
-        return loginVO;
+        CheckUtil.checkEmail(userDTO.getEmail());
+        CheckUtil.checkPassword(userDTO.getPassword());
+
+        return userService.login(userDTO);
     }
 
     /**
-     * 用户注册
-     * @param requestDTO
+     * 注册
+     *
+     * @param userDTO
      * @return
      */
-    @RequestMapping(value = "/register", method = RequestMethod.POST)
-    public boolean register(@RequestBody RequestDTO requestDTO) {
-        //校验邮箱与验证码是否匹配
-        if(CaptchaUtil.validateCode(requestDTO.getEmail(), requestDTO.getVerificationCode())){
-            return userService.register(requestDTO);
-        }
-        return false;
+    @PostMapping(value = "/signup")
+    public LoginVO register(@RequestBody UserDTO userDTO) throws DataInvalidException, UserException {
 
+        CheckUtil.checkEmail(userDTO.getEmail());
+        CheckUtil.checkUsername(userDTO.getUsername());
+        CheckUtil.checkPassword(userDTO.getPassword());
+        CheckUtil.checkCode(userDTO.getCode());
+
+        return userService.signUp(userDTO);
     }
 
     /**
      * 发送验证码
-     * @param requestDTO email
+     *
+     * @param userDTO
      * @return
+     * @throws AddressException
      */
-    @RequestMapping(value = "/sendCode", method = RequestMethod.POST)
-    public boolean sendCode(@RequestBody RequestDTO requestDTO) {
-        return userService.sendCode(requestDTO);
+    @PostMapping(value = "/sendCode")
+    public LoginVO sendCode(@RequestBody UserDTO userDTO) throws DataInvalidException, MessagingException, UserException {
+
+        CheckUtil.checkEmail(userDTO.getEmail());
+
+        LoginVO loginVO = userService.sendCode(userDTO);
+
+        return loginVO;
     }
 }

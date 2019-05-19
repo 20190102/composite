@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>这是一个测试单点登录页面，在登录页登录后刷新此页面会跳转到用户列表页</h1>
+    <script>
+    function getToken() {
+    	alert(document.cookie)
+        var c = document.cookie.split(';');
+        if (c[0]) {
+            var t = c[0].split('=')
+            return t[1]
+        }
+        return ""
+    }
+    getToken()
+    </script>
+    <script src="../js/axios.min.js"></script>
+</body>
+
+</html>

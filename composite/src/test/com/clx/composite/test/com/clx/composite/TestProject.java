@@ -1,6 +1,6 @@
 package com.clx.composite.test.com.clx.composite;
 
-import com.clx.composite.model.UserDO;
+import com.clx.composite.model.DO.UserDO;
 import org.junit.Test;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;

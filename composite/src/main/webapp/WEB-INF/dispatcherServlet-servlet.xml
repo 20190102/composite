@@ -11,15 +11,24 @@
     <mvc:default-servlet-handler/>
 
     <!--扫描包中类的注解-->
-    <context:component-scan base-package="com.clx.composite.web"/>
+    <context:component-scan base-package="com.clx.composite.web,com.clx.composite.exception"/>
+
+    <!--文件解析器-->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize">
+            <value>104857600</value>
+        </property>
+    </bean>
 
     <!--配置拦截器-->
     <mvc:interceptors>
             <mvc:interceptor>
-                <mvc:mapping path="/**/*"/>
+                <mvc:mapping path="/**"/>
+                <mvc:exclude-mapping path="/static/**/*"/>
+                <mvc:exclude-mapping path="/*.html"/>
                 <mvc:exclude-mapping path="/login"/>
                 <mvc:exclude-mapping path="/sendCode"/>
-                <mvc:exclude-mapping path="/register"/>
+                <mvc:exclude-mapping path="/signup"/>
                 <bean  class="com.clx.composite.interceptor.TokenInterceptor"/>
             </mvc:interceptor>
     </mvc:interceptors>

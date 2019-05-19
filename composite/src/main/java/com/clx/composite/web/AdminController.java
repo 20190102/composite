@@ -1,72 +1,122 @@
 package com.clx.composite.web;
 
-import com.clx.composite.model.LoginVO;
-import com.clx.composite.model.RequestDTO;
-import com.clx.composite.model.UserDO;
-import com.clx.composite.service.UserService;
-import com.github.pagehelper.PageInfo;
+import com.clx.composite.exception.AdminException;
+import com.clx.composite.exception.DataInvalidException;
+import com.clx.composite.model.DTO.AdminDTO;
+import com.clx.composite.model.VO.UserListVO;
+import com.clx.composite.service.AdminService;
+import com.clx.composite.utils.CheckUtil;
+import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
-@Controller
-@ResponseBody
-@CrossOrigin
+import javax.servlet.http.HttpServletResponse;
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+
+@RestController
 public class AdminController {
+
     @Autowired
-    private UserService userService;
-    @Autowired
-    private LoginVO loginVO;
+    private AdminService adminService;
 
     /**
-     * 获取用户数据
-     * @param queryInfo
+     * 获取用户列表
+     *
+     * @param query
      * @param page
      * @return
      */
-    @RequestMapping(value = {"/users","/users/{queryInfo}"}, method = RequestMethod.GET)
-    public LoginVO listQueryUsers(@PathVariable(required = false)String queryInfo,
-                                  @RequestParam(required = false,defaultValue = "1") int page) {
-        //这个code的值由拦截器校验token后设置
-        if(loginVO.getCode()==200){
-            //前端不传queryInfo默认为获取所有数据，@PathVariable没有默认值功能，所以手动设没有传值时值为""
-            if(queryInfo==null)queryInfo="";
-            PageInfo<UserDO> pageDTO = userService.listUsers(queryInfo,page);
-            loginVO.setInfo(pageDTO);
-        }else {
-            loginVO.setInfo(null);
-        }
-        return loginVO;
+    @GetMapping(value = {"/users", "/users/{query}"})
+    public UserListVO listUsers(@PathVariable(required = false) String query,
+                                @RequestParam(required = false, defaultValue = "1") int page) {
+
+        return adminService.listUsers(query, page);
     }
+
 
     /**
      * 添加用户
-     * @param requestDTO
+     *
+     * @param adminDTO
      * @return
+     * @throws DataInvalidException
      */
-    @RequestMapping(value = "/users", method = RequestMethod.POST)
-    public boolean insertUser(@RequestBody RequestDTO requestDTO) {
-        return userService.insertUser(requestDTO);
+    @PostMapping(value = "/users")
+    public UserListVO insertUser(@RequestBody AdminDTO adminDTO) throws DataInvalidException, AdminException {
+
+        CheckUtil.checkEmail(adminDTO.getEmail());
+        CheckUtil.checkUsername(adminDTO.getUsername());
+        CheckUtil.checkPassword(adminDTO.getPassword());
+        CheckUtil.checkDate(adminDTO.getBirthday());
+        CheckUtil.checkSex(adminDTO.getSex());
+        CheckUtil.checkPermission(adminDTO.getPermission());
+
+        return adminService.insertUser(adminDTO);
     }
 
     /**
-     * 删除数据
-     * @param requestDTO idList
+     * 删除用户
+     *
+     * @param adminDTO
      * @return
+     * @throws AdminException
      */
-    @RequestMapping(value = "/users", method = RequestMethod.DELETE)
-    public boolean deleteUsers(@RequestBody RequestDTO requestDTO) {
-        return userService.deleteUsers(requestDTO);
+    @DeleteMapping(value = "/users")
+    public UserListVO deleteUsers(@RequestBody AdminDTO adminDTO) throws AdminException {
+        if (adminDTO.getIdList().size() == 0) throw new AdminException("无效数据");
+        return adminService.deleteUsers(adminDTO);
     }
 
     /**
-     * 更新数据
-     * @param requestDTO
+     * 修改用户数据
+     *
+     * @param adminDTO
      * @return
      */
-    @RequestMapping(value = "/users", method = RequestMethod.PUT)
-    public boolean updateUsers(@RequestBody RequestDTO requestDTO) {
-        return userService.updateUser(requestDTO);
+    @PutMapping(value = "/users")
+    public UserListVO updateUsers(@RequestBody AdminDTO adminDTO) throws AdminException, DataInvalidException {
+
+        CheckUtil.checkEmail(adminDTO.getEmail());
+        CheckUtil.checkUsername(adminDTO.getUsername());
+        CheckUtil.checkDate(adminDTO.getBirthday());
+        CheckUtil.checkSex(adminDTO.getSex());
+        CheckUtil.checkPermission(adminDTO.getPermission());
+
+        return adminService.updateUser(adminDTO);
+    }
+
+    /**
+     * 上传excel文件
+     *
+     * @param file
+     * @return
+     */
+    @RequestMapping("/upload")
+    public UserListVO upload(MultipartFile file) {
+        return adminService.uploadExcel(file);
+    }
+
+    /**
+     * 获取redis中的excel文件数据
+     *
+     * @param page
+     * @return
+     */
+    @GetMapping(value = "/excel")
+    public UserListVO listExcel(int page) {
+        return adminService.getLrange(page);
+    }
+
+    @GetMapping(value = "/file")
+    public void download(HttpServletResponse res) throws IOException {
+        File file = new File("E:\\模板.xlsx");
+
+        OutputStream out = res.getOutputStream();
+        out.write(FileUtils.readFileToByteArray(file));
+        out.close();
     }
 
 }
