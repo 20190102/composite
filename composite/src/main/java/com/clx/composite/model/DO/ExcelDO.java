@@ -1,7 +1,5 @@
 package com.clx.composite.model.DO;
 
-import org.springframework.stereotype.Component;
-
 /**
  * 对应上传的excel字段
  */

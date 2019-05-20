@@ -1,7 +1,5 @@
 package com.clx.composite.model.DO;
 
-import org.springframework.stereotype.Component;
-
 
 /**
  * 数据库实体类

@@ -1,7 +1,6 @@
 package com.clx.composite.model.DTO;
 
 import com.clx.composite.utils.ConvertUtil;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;

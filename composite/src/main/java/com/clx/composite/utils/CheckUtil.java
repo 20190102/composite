@@ -2,8 +2,6 @@ package com.clx.composite.utils;
 
 import com.clx.composite.exception.DataInvalidException;
 
-import java.util.regex.Pattern;
-
 /**
  * 数据格式校验工具类
  */

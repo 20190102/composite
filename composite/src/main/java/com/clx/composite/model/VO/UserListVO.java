@@ -1,8 +1,6 @@
 package com.clx.composite.model.VO;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.github.pagehelper.PageInfo;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 /**
