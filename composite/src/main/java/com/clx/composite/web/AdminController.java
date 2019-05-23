@@ -8,9 +8,11 @@ import com.clx.composite.service.AdminService;
 import com.clx.composite.utils.CheckUtil;
 import org.apache.commons.io.FileUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ResourceUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.File;
 import java.io.IOException;
@@ -111,9 +113,8 @@ public class AdminController {
     }
 
     @GetMapping(value = "/file")
-    public void download(HttpServletResponse res) throws IOException {
-        File file = new File("E:\\模板.xlsx");
-
+    public void download(HttpServletResponse res, HttpServletRequest req) throws IOException {
+        File file= ResourceUtils.getFile(ResourceUtils.CLASSPATH_URL_PREFIX+"file/模板.xlsx");
         OutputStream out = res.getOutputStream();
         out.write(FileUtils.readFileToByteArray(file));
         out.close();
