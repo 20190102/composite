@@ -17,7 +17,7 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>1.7</maven.compiler.source>
     <maven.compiler.target>1.7</maven.compiler.target>
-    <junit_version>4.11</junit_version>
+    <junit_version>4.13.1</junit_version>
     <spring_version>5.1.7.RELEASE</spring_version>
     <mysql_version>8.0.15</mysql_version>
     <mybatis_version>3.5.1</mybatis_version>
