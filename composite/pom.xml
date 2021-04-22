@@ -20,7 +20,7 @@
     <junit_version>4.11</junit_version>
     <spring_version>5.1.7.RELEASE</spring_version>
     <mysql_version>8.0.15</mysql_version>
-    <mybatis_version>3.5.1</mybatis_version>
+    <mybatis_version>3.5.6</mybatis_version>
     <mybatis_spring_version>2.0.1</mybatis_spring_version>
     <jedis_version>2.9.0</jedis_version>
     <jedis_spring_version>2.1.6.RELEASE</jedis_spring_version>
